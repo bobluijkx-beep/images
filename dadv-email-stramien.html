@@ -1,0 +1,211 @@
+<!--
+=====================================================================
+  E-MAILSTRAMIEN  ·  Dierenarts aan de Vliet
+=====================================================================
+  Werkt in: Outlook (Windows/Mac/web), Apple Mail (Mac/iPhone/iPad),
+  Gmail (web/app), Android-mail. Mobiel vanzelf: de kaart krimpt mee
+  tot schermbreedte, ook zonder media queries.
+
+  OPBOUW (van boven naar beneden)
+    [1] Voorvertoningstekst  - grijze regel naast het onderwerp in de inbox
+    [2] Kop met logo
+    [3] INHOUD               - DIT DEEL PAS JE PER SOORT E-MAIL AAN
+          3a  Aanhef + tekst
+          3b  Afspraakkaart  (weglaten als het geen afspraak-mail is)
+          3c  Knop           (optioneel)
+          3d  Afsluiting + afzender
+          3e  Kleine lettertjes (afzeggen, geluidsopname)
+    [4] Uw gegevens          (optioneel)
+    [5] Locatie + kaart      (optioneel)
+    [6] Voetregel praktijk   (altijd laten staan)
+
+  AANPASSEN
+    - Kleuren (huisstijl dadv.nl): geel #FFEB41, bijna-zwart #1E1E1E,
+      taupe #949083 (subkoppen), tekst #323436, grijs #7C7B7A,
+      lijnen #EDEAE3, achtergrond #F7F5F0.
+      Zoek-en-vervang werkt prima.
+    - Een blok weglaten: verwijder alles tussen
+      <!- - BLOK ... - -> en <!- - /BLOK ... - -> (zonder spaties).
+    - Placeholders ${...} komen rechtstreeks uit Animana.
+=====================================================================
+-->
+<style type="text/css">
+  /* Alleen extra's; alles wat belangrijk is staat inline in de code. */
+  body { margin:0 !important; padding:0 !important; }
+  a { color:#1E1E1E; }
+  @media only screen and (max-width:620px) {
+    .px { padding-left:20px !important; padding-right:20px !important; }
+    .h1 { font-size:20px !important; }
+  }
+</style>
+
+<!-- Buitenrand: grijze achtergrond over de volle breedte -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F7F5F0" style="background-color:#F7F5F0; width:100%;">
+<tr>
+<td align="center" style="padding:24px 12px;">
+
+  <!-- [1] VOORVERTONINGSTEKST (onzichtbaar in de mail zelf) -->
+  <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">
+    Uw afspraak met ${patient.naam} op ${afspraak.datum} om ${afspraak.tijd} uur is bevestigd.
+  </div>
+
+  <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; margin:0 auto;">
+    <!-- KAART: witte kaart met afgeronde hoeken (Outlook Windows toont rechte hoeken) -->
+    <tr>
+    <td bgcolor="#FFFFFF" style="background-color:#FFFFFF; border:1px solid #EDEAE3; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(60,50,30,0.12), 0 6px 20px rgba(60,50,30,0.12);">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+
+    <!-- [2] KOP MET LOGO -->
+    <tr>
+      <td align="center" style="padding:32px 32px 16px 32px;" class="px">
+        <a href="https://www.dadv.nl" target="_blank" style="text-decoration:none;">
+          <img src="https://bobluijkx-beep.github.io/images/logo_dadv3.png" width="165" alt="Dierenarts aan de Vliet" style="display:block; width:165px; max-width:165px; height:auto; border:0; outline:none; text-decoration:none; font-family:Arial, Helvetica, sans-serif; font-size:18px; color:#1E1E1E;" />
+        </a>
+      </td>
+    </tr>
+
+    <!-- [3] INHOUD -->
+    <tr>
+      <td style="padding:8px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:24px; color:#323436;" class="px">
+
+        <!-- BLOK 3a: aanhef + tekst -->
+        <p style="margin:0 0 16px 0;">
+          Geachte ${klant.aanspreektitel} ${klant.tussenvoegsel} ${klant.achternaam},
+        </p>
+        <p style="margin:0 0 24px 0;">
+          Graag bevestigen wij uw afspraak* met ${patient.naam}. Hieronder vindt u de details.
+        </p>
+        <!-- /BLOK 3a -->
+
+        <!-- BLOK 3b: afspraakkaart -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FAF8F4" style="width:100%; background-color:#FAF8F4; border-left:4px solid #FFEB41; border-radius:10px; box-shadow:0 1px 3px rgba(60,50,30,0.14), 0 3px 8px rgba(60,50,30,0.10);">
+          <tr>
+            <td style="padding:18px 20px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:22px; color:#323436;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="90" valign="top" style="padding:4px 0; font-size:13px; color:#7C7B7A;">Patiënt</td>
+                  <td valign="top" style="padding:4px 0; font-size:15px; font-weight:bold; color:#323436;">${patient.naam}</td>
+                </tr>
+                <tr>
+                  <td width="90" valign="top" style="padding:4px 0; font-size:13px; color:#7C7B7A;">Datum</td>
+                  <td valign="top" style="padding:4px 0; font-size:15px; font-weight:bold; color:#323436;">${afspraak.datum}</td>
+                </tr>
+                <tr>
+                  <td width="90" valign="top" style="padding:4px 0; font-size:13px; color:#7C7B7A;">Tijd</td>
+                  <td valign="top" style="padding:4px 0; font-size:15px; font-weight:bold; color:#323436;">${afspraak.tijd} uur</td>
+                </tr>
+                <tr>
+                  <td width="90" valign="top" style="padding:4px 0; font-size:13px; color:#7C7B7A;">Locatie</td>
+                  <td valign="top" style="padding:4px 0; font-size:15px; color:#323436;">Voorstraat 59, Voorschoten</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <div style="height:24px; line-height:24px; font-size:0;">&nbsp;</div>
+        <!-- /BLOK 3b -->
+
+        <!-- BLOK 3c: knoppen (tekst en link aanpassen of blok weglaten)
+             De agendaknop linkt naar agenda.html op GitHub Pages en geeft datum, tijd, patiënt en afspraaktype mee.
+             Vervang ${afspraak.type} door de echte Animana-placeholder voor het afspraaktype. -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px 0;">
+          <tr>
+            <td bgcolor="#FFEB41" style="background-color:#FFEB41; border-radius:8px; box-shadow:0 2px 4px rgba(60,50,30,0.22), 0 4px 10px rgba(60,50,30,0.12); mso-padding-alt:12px 18px;">
+              <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Voorstraat+59,+2251+BM+Voorschoten" target="_blank" style="display:inline-block; padding:12px 18px; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:20px; font-weight:bold; color:#1E1E1E; text-decoration:none; border-radius:8px; white-space:nowrap;">routebeschrijving</a>
+            </td>
+            <td width="10" style="width:10px; font-size:0; line-height:0;">&nbsp;</td>
+            <td bgcolor="#FFFFFF" style="background-color:#FFFFFF; border:1px solid #E2DED5; border-radius:8px; box-shadow:0 2px 4px rgba(60,50,30,0.14), 0 4px 10px rgba(60,50,30,0.08); mso-padding-alt:11px 17px;">
+              <a href="https://bobluijkx-beep.github.io/images/agenda.html?datum=${afspraak.datum}&amp;tijd=${afspraak.tijd}&amp;patient=${patient.naam}&amp;type=${afspraak.type}" target="_blank" style="display:inline-block; padding:11px 17px; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:20px; font-weight:bold; color:#1E1E1E; text-decoration:none; border-radius:8px; white-space:nowrap;">in mijn agenda</a>
+            </td>
+          </tr>
+        </table>
+        <!-- /BLOK 3c -->
+
+        <!-- BLOK 3d: afsluiting + afzender -->
+        <p style="margin:0 0 16px 0; font-family:Arial, Helvetica, sans-serif; font-size:20px; line-height:26px; font-weight:bold; color:#949083;">tot ziens in de praktijk!</p>
+        <p style="margin:0 0 4px 0;">Met vriendelijke groet,</p>
+        <p style="margin:0 0 28px 0; font-weight:bold;">${medewerker}</p>
+        <!-- /BLOK 3d -->
+
+        <!-- BLOK 3e: kleine lettertjes (afzeggen + geluidsopname) -->
+        <p style="margin:0 0 8px 0; font-size:12px; line-height:18px; color:#7C7B7A;">
+          * Bij verhindering dienen afspraken minstens 1 werkdag van tevoren afgezegd te worden, daar de gereserveerde tijd anders in rekening gebracht kan worden.
+        </p>
+        <p style="margin:0 0 28px 0; font-size:12px; line-height:18px; color:#7C7B7A;">
+          Tijdens uw bezoek maken wij een geluidsopname van het consult in het belang van de medische verslaglegging.
+          <a href="https://dadv.nl/nl/veelgestelde-vragen" target="_blank" style="color:#7C7B7A; text-decoration:underline;">Lees de veelgestelde vragen over de geluidsopname</a>.
+        </p>
+        <!-- /BLOK 3e -->
+
+      </td>
+    </tr>
+
+    <!-- BLOK 4: UW GEGEVENS -->
+    <tr>
+      <td style="padding:0 40px;" class="px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="border-top:1px solid #EDEAE3; font-size:0; line-height:0; height:1px;">&nbsp;</td></tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px 40px 28px 40px; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:22px; color:#323436;" class="px">
+        <p style="margin:0 0 8px 0; font-size:17px; line-height:22px; font-weight:bold; color:#1E1E1E;">uw gegevens</p>
+        <p style="margin:0 0 12px 0;">
+          ${klant.titel} ${klant.voornaam} ${klant.tussenvoegsel} ${klant.achternaam}<br />
+          ${adres.straat} ${adres.nummer}<br />
+          ${adres.postcode} ${adres.plaats}<br />
+          ${telefoon.nummer}
+        </p>
+        <p style="margin:0; font-size:13px; line-height:20px; color:#7C7B7A;">
+          Klopt er iets niet?
+          <a href="https://form.jotform.com/41753384822963?aanhef=${klant.titel}&amp;voorletters=${klant.voornaam}&amp;voorvoegsels=${klant.tussenvoegsel}&amp;naam=${klant.achternaam}&amp;adres=${adres.straat}&amp;huisnummer=${adres.nummer}&amp;postcode=${adres.postcode}&amp;plaats=${adres.plaats}&amp;telefoon=${telefoon.nummer}&amp;email=${klant.emailadres}" target="_blank" style="color:#1E1E1E; text-decoration:underline;">Pas uw gegevens aan</a>
+        </p>
+      </td>
+    </tr>
+    <!-- /BLOK 4 -->
+
+    <!-- BLOK 5: LOCATIE + KAART -->
+    <tr>
+      <td style="padding:0 40px;" class="px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="border-top:1px solid #EDEAE3; font-size:0; line-height:0; height:1px;">&nbsp;</td></tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px 40px 32px 40px; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:22px; color:#323436;" class="px">
+        <p style="margin:0 0 12px 0; font-size:17px; line-height:22px; font-weight:bold; color:#1E1E1E;">locatie en parkeren</p>
+        <a href="https://www.google.com/maps/d/viewer?mid=1O_nh4m7B2i1KfWvJckvfOE_mRq5pNrOU&amp;ll=52.1234010550341%2C4.444462299999941&amp;z=18" target="_blank" style="text-decoration:none;">
+          <img src="https://bobluijkx-beep.github.io/images/kaart_voorschoten.png" width="520" alt="Kaart: praktijk en parkeerplaatsen in Voorschoten" style="display:block; width:100%; max-width:520px; height:auto; border:1px solid #EDEAE3; border-radius:10px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#7C7B7A;" />
+        </a>
+        <p style="margin:8px 0 0 0; font-size:13px; line-height:20px; color:#7C7B7A;">Klik op de kaart voor meer details.</p>
+      </td>
+    </tr>
+    <!-- /BLOK 5 -->
+
+    </table>
+    </td>
+    </tr>
+    <!-- /KAART -->
+
+    <!-- [6] VOETREGEL PRAKTIJK -->
+    <tr>
+      <td align="center" style="padding:24px 32px 8px 32px; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:19px; color:#7C7B7A;" class="px">
+        <strong style="color:#1E1E1E;">Dierenarts aan de Vliet</strong><br />
+        Voorstraat 59 &middot; 2251 BM Voorschoten<br />
+        <a href="tel:0715622433" style="color:#7C7B7A; text-decoration:none;">071-5622433</a>
+        &nbsp;&middot;&nbsp;
+        <a href="mailto:info@dadv.nl" style="color:#7C7B7A; text-decoration:none;">info@dadv.nl</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://www.dadv.nl" target="_blank" style="color:#7C7B7A; text-decoration:none;">www.dadv.nl</a>
+      </td>
+    </tr>
+
+  </table>
+  <!--[if mso]></td></tr></table><![endif]-->
+
+</td>
+</tr>
+</table>
