@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Afspraak annuleren – Dierenarts aan de Vliet</title>
+<!--
+  Annuleerpagina voor de afspraakbevestiging van Dierenarts aan de Vliet.
+  Zet dit bestand in de repository "images" (bobluijkx-beep.github.io/images/annuleren.html).
+  De e-mail linkt hierheen met: ?datum=DD-MM-JJJJ&tijd=UU:MM&patient=Naam
+  Regel: annuleren kan tot 1 werkdag van tevoren, op dezelfde tijd als de afspraak
+  (maandag 9:00 -> uiterlijk vrijdag 9:00). Weekenden en de FEESTDAGEN hieronder tellen niet mee.
+  Annuleren gaat per e-mail naar de praktijk; de praktijk haalt de afspraak zelf uit Animana.
+-->
+<style>
+  :root{--bg:#F7F5F0;--card:#fff;--line:#EDEAE3;--ink:#1E1E1E;--text:#323436;--muted:#7C7B7A;--taupe:#949083;--yellow:#FFEB41}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Arial,Helvetica,sans-serif}
+  .wrap{max-width:480px;margin:0 auto;padding:28px 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(60,50,30,.12),0 6px 20px rgba(60,50,30,.12);padding:28px 24px}
+  .logo{display:block;margin:0 auto 18px;width:150px;height:auto}
+  h1{margin:0;font-size:22px;line-height:28px;color:var(--ink)}
+  .sub{margin:0 0 18px;font-size:22px;line-height:28px;font-weight:bold;color:var(--taupe)}
+  .box{background:#FAF8F4;border-left:4px solid var(--yellow);border-radius:10px;padding:14px 16px;margin-bottom:22px}
+  .box div{display:flex;gap:12px;padding:3px 0}.box span{flex:0 0 70px;font-size:13px;color:var(--muted);padding-top:2px}.box b{color:var(--ink)}
+  a.btn{display:block;text-align:center;text-decoration:none;font-weight:bold;font-size:15px;padding:13px 16px;border-radius:8px;margin:0 0 10px;color:var(--ink)}
+  a.main{background:var(--yellow);box-shadow:0 2px 4px rgba(60,50,30,.22),0 4px 10px rgba(60,50,30,.12)}
+  a.alt{background:#fff;border:1px solid var(--line);box-shadow:0 1px 3px rgba(60,50,30,.10)}
+  .hint{font-size:13px;color:var(--muted);margin:14px 0 0}
+  .err{color:#8a3b12}
+  .stop a,.hint a,.err a{color:#1E1E1E;font-weight:bold}
+  .stop{background:#FBF3F0;border-left:4px solid #C9724E;border-radius:10px;padding:14px 16px;margin-bottom:18px;color:#1E1E1E}
+  .stop b{display:block;margin-bottom:4px}
+  .ok{background:#F2F7EF;border-left:4px solid #7BA05B;border-radius:10px;padding:14px 16px;margin-bottom:18px}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <img class="logo" src="https://bobluijkx-beep.github.io/images/logo_dadv3.png" alt="Dierenarts aan de Vliet">
+  <h1>afspraak</h1>
+  <p class="sub">annuleren</p>
+  <div id="inhoud"></div>
+</div></div>
+
+<script>
+/* ===== INSTELLINGEN ===== */
+const PRAKTIJK = 'Dierenarts aan de Vliet';
+const ADRES    = 'Voorstraat 59, 2251 BM Voorschoten';
+const TELEFOON = '071-5622433';
+const TEL_LINK = 'tel:0715622433';
+const MAIL     = 'info@dadv.nl';
+// Dagen waarop de praktijk dicht is (JJJJ-MM-DD); die tellen niet als werkdag. Controleer en vul aan.
+const FEESTDAGEN = [
+  '2026-12-25','2026-12-26',
+  '2027-01-01','2027-03-29','2027-04-27','2027-05-06','2027-05-17','2027-12-25','2027-12-26'
+];
+/* ======================== */
+
+const q = new URLSearchParams(location.search);
+const datum = (q.get('datum') || '').trim();
+const tijd  = (q.get('tijd')  || '').trim();
+const patient = (q.get('patient') || '').trim();
+const el = document.getElementById('inhoud');
+const md = datum.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
+const mt = tijd.match(/^(\d{1,2})[:.](\d{2})/);
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function p2(n){return String(n).padStart(2,'0')}
+const dagnaam = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+
+// Huidige tijd in Nederland, ongeacht de tijdzone van het apparaat ("wandklok" als UTC-datum).
+function nuInAmsterdam(){
+  const test = q.get('nu'); // alleen voor testen: ?nu=2026-12-05T14:00
+  if (test) { const t = test.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); if (t) return new Date(Date.UTC(+t[1],t[2]-1,+t[3],+t[4],+t[5])); }
+  const f = new Intl.DateTimeFormat('nl-NL',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  const p = Object.fromEntries(f.formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return new Date(Date.UTC(+p.year, p.month-1, +p.day, +p.hour, +p.minute));
+}
+function isWerkdag(t){
+  const w = t.getUTCDay();
+  const iso = t.getUTCFullYear()+'-'+p2(t.getUTCMonth()+1)+'-'+p2(t.getUTCDate());
+  return w !== 0 && w !== 6 && !FEESTDAGEN.includes(iso);
+}
+function vorigeWerkdag(t){
+  const d = new Date(t.getTime());
+  do { d.setUTCDate(d.getUTCDate()-1); } while (!isWerkdag(d));
+  return d;
+}
+
+if (!md || !mt) {
+  el.innerHTML = '<p class="err">Deze link bevat geen geldige datum of tijd. Bel ons gerust: <a href="'+TEL_LINK+'">'+TELEFOON+'</a>.</p>';
+} else {
+  const [ , d, m, y] = md.map(Number), [ , hh, mm] = mt.map(Number);
+  const afspraak = new Date(Date.UTC(y, m-1, d, hh, mm));
+  const uiterlijk = vorigeWerkdag(afspraak);   // zelfde tijd, vorige werkdag
+  const nu = nuInAmsterdam();
+  const fmt = t => dagnaam[t.getUTCDay()]+' '+t.getUTCDate()+'-'+p2(t.getUTCMonth()+1)+'-'+t.getUTCFullYear()+' om '+p2(t.getUTCHours())+':'+p2(t.getUTCMinutes())+' uur';
+
+  let html = '<div class="box">' +
+    (patient ? '<div><span>Patiënt</span><b>'+esc(patient)+'</b></div>' : '') +
+    '<div><span>Datum</span><b>'+p2(d)+'-'+p2(m)+'-'+y+'</b></div>' +
+    '<div><span>Tijd</span><b>'+p2(hh)+':'+p2(mm)+' uur</b></div>' +
+    '<div><span>Locatie</span>'+esc(ADRES)+'</div></div>';
+
+  if (nu >= afspraak) {
+    html += '<div class="stop"><b>Deze afspraak is al geweest.</b>Heeft u een vraag? Bel ons op <a href="'+TEL_LINK+'">'+TELEFOON+'</a>.</div>';
+  } else if (nu >= uiterlijk) {
+    html += '<div class="stop"><b>Helaas is het niet meer mogelijk om deze afspraak te annuleren.</b>' +
+      'Annuleren kan tot 1 werkdag van tevoren, dus uiterlijk '+fmt(uiterlijk)+'. ' +
+      'Kunt u echt niet komen? Bel ons dan op <a href="'+TEL_LINK+'">'+TELEFOON+'</a>. ' +
+      'De gereserveerde tijd kan in rekening worden gebracht.</div>';
+  } else {
+    const onderwerp = 'Annulering afspraak' + (patient ? ' ' + patient : '') + ' ' + p2(d)+'-'+p2(m)+'-'+y + ' ' + p2(hh)+':'+p2(mm);
+    const tekst = 'Beste ' + PRAKTIJK + ',\n\nGraag annuleer ik de volgende afspraak:\n' +
+      (patient ? 'Patiënt: ' + patient + '\n' : '') +
+      'Datum: ' + p2(d)+'-'+p2(m)+'-'+y + '\nTijd: ' + p2(hh)+':'+p2(mm) + ' uur\n\n' +
+      'Mijn naam: \n\nMet vriendelijke groet,\n';
+    const mailto = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(onderwerp) + '&body=' + encodeURIComponent(tekst);
+    html += '<div class="ok">U kunt deze afspraak kosteloos annuleren tot <b>'+fmt(uiterlijk)+'</b>.</div>' +
+      '<a class="btn main" href="'+mailto+'">afspraak annuleren per e-mail</a>' +
+      '<p class="hint">Uw e-mailprogramma opent met een kant-en-klaar bericht aan '+MAIL+'. Verstuur het bericht om te annuleren; ' +
+      'de annulering is pas definitief als wij die per e-mail bevestigd hebben. Liever bellen? <a href="'+TEL_LINK+'">'+TELEFOON+'</a>.</p>';
+  }
+  el.innerHTML = html;
+}
+</script>
+</body>
+</html>
