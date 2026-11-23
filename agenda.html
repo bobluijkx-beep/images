@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Afspraak in uw agenda – Dierenarts aan de Vliet</title>
+<!--
+  Agendapagina voor de afspraakbevestiging van Dierenarts aan de Vliet.
+  Zet dit bestand op GitHub Pages naast de map /images (repository "images": bobluijkx-beep.github.io/images/agenda.html).
+  De e-mail linkt hierheen met: ?datum=DD-MM-JJJJ&tijd=UU:MM&patient=Naam
+  Pas hieronder bij INSTELLINGEN de duur, herinnering en teksten aan.
+-->
+<style>
+  :root{--bg:#F7F5F0;--card:#fff;--line:#EDEAE3;--ink:#1E1E1E;--text:#323436;--muted:#7C7B7A;--taupe:#949083;--yellow:#FFEB41}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Arial,Helvetica,sans-serif}
+  .wrap{max-width:480px;margin:0 auto;padding:28px 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(60,50,30,.12),0 6px 20px rgba(60,50,30,.12);padding:28px 24px}
+  .logo{display:block;margin:0 auto 18px;width:150px;height:auto}
+  h1{margin:0;font-size:22px;line-height:28px;color:var(--ink)}
+  .sub{margin:0 0 18px;font-size:22px;line-height:28px;font-weight:bold;color:var(--taupe)}
+  .box{background:#FAF8F4;border-left:4px solid var(--yellow);border-radius:10px;padding:14px 16px;margin-bottom:22px}
+  .box div{display:flex;gap:12px;padding:3px 0}.box span{flex:0 0 70px;font-size:13px;color:var(--muted);padding-top:2px}.box b{color:var(--ink)}
+  a.btn{display:block;text-align:center;text-decoration:none;font-weight:bold;font-size:15px;padding:13px 16px;border-radius:8px;margin:0 0 10px;color:var(--ink)}
+  a.main{background:var(--yellow);box-shadow:0 2px 4px rgba(60,50,30,.22),0 4px 10px rgba(60,50,30,.12)}
+  a.alt{background:#fff;border:1px solid var(--line);box-shadow:0 1px 3px rgba(60,50,30,.10)}
+  .hint{font-size:13px;color:var(--muted);margin:14px 0 0}
+  .err{color:#8a3b12}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <img class="logo" src="https://bobluijkx-beep.github.io/images/logo_dadv3.png" alt="Dierenarts aan de Vliet">
+  <h1>uw afspraak</h1>
+  <p class="sub">in uw agenda</p>
+  <div id="inhoud"></div>
+</div></div>
+
+<script>
+/* ===== INSTELLINGEN ===== */
+const DUUR_MINUTEN   = 20;   // lengte van de afspraak in de agenda
+const HERINNERING_MIN = 60;  // herinnering zoveel minuten van tevoren (0 = geen)
+const PRAKTIJK  = 'Dierenarts aan de Vliet';
+const ADRES     = 'Voorstraat 59, 2251 BM Voorschoten';
+const TELEFOON  = '071-5622433';
+/* ======================== */
+
+const q = new URLSearchParams(location.search);
+const datum = (q.get('datum') || '').trim();      // 07-12-2026
+const tijd  = (q.get('tijd')  || '').trim();      // 15:00
+const patient = (q.get('patient') || '').trim();  // Elvis
+const el = document.getElementById('inhoud');
+
+const md = datum.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
+const mt = tijd.match(/^(\d{1,2})[:.](\d{2})/);
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function p2(n){return String(n).padStart(2,'0')}
+
+if(!md || !mt){
+  el.innerHTML = '<p class="err">Deze link bevat geen geldige datum of tijd. Bel ons gerust: '+TELEFOON+'.</p>';
+} else {
+  const [ , d, m, y] = md.map(Number), [ , hh, mm] = mt.map(Number);
+  // Rekenen in "wandkloktijd" (Amsterdam); de agenda krijgt de tijdzone erbij.
+  const start = new Date(Date.UTC(y, m-1, d, hh, mm));
+  const eind  = new Date(start.getTime() + DUUR_MINUTEN*60000);
+  const stamp = t => t.getUTCFullYear()+p2(t.getUTCMonth()+1)+p2(t.getUTCDate())+'T'+p2(t.getUTCHours())+p2(t.getUTCMinutes())+'00';
+  const iso   = t => t.getUTCFullYear()+'-'+p2(t.getUTCMonth()+1)+'-'+p2(t.getUTCDate())+'T'+p2(t.getUTCHours())+':'+p2(t.getUTCMinutes())+':00';
+
+  const titel = 'Dierenarts' + (patient ? ' – ' + patient : '') + ' (' + PRAKTIJK + ')';
+  const omschrijving = 'Afspraak bij ' + PRAKTIJK + (patient ? ' met ' + patient : '') +
+    '.\\nVerhinderd? Zeg uw afspraak minstens 1 werkdag van tevoren af via ' + TELEFOON + '.';
+  const omschrijvingPlat = omschrijving.replace(/\\n/g, '\n');
+
+  // .ics voor Apple Agenda, Outlook (Windows/Mac) en de meeste telefoons
+  const nu = new Date();
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Dierenarts aan de Vliet//Afspraak//NL','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+    'BEGIN:VTIMEZONE','TZID:Europe/Amsterdam',
+    'BEGIN:DAYLIGHT','TZOFFSETFROM:+0100','TZOFFSETTO:+0200','TZNAME:CEST','DTSTART:19700329T020000','RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU','END:DAYLIGHT',
+    'BEGIN:STANDARD','TZOFFSETFROM:+0200','TZOFFSETTO:+0100','TZNAME:CET','DTSTART:19701025T030000','RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU','END:STANDARD',
+    'END:VTIMEZONE',
+    'BEGIN:VEVENT',
+    'UID:dadv-' + stamp(start) + '-' + (patient||'afspraak').replace(/[^A-Za-z0-9]/g,'') + '@dadv.nl',
+    'DTSTAMP:' + nu.toISOString().replace(/[-:]/g,'').slice(0,15) + 'Z',
+    'DTSTART;TZID=Europe/Amsterdam:' + stamp(start),
+    'DTEND;TZID=Europe/Amsterdam:' + stamp(eind),
+    'SUMMARY:' + titel.replace(/([,;])/g,'\\$1'),
+    'LOCATION:' + ADRES.replace(/([,;])/g,'\\$1'),
+    'DESCRIPTION:' + omschrijving.replace(/([,;])/g,'\\$1'),
+    ...(HERINNERING_MIN ? ['BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:' + titel.replace(/([,;])/g,'\\$1'),'TRIGGER:-PT' + HERINNERING_MIN + 'M','END:VALARM'] : []),
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const icsUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+
+  const google = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent(titel) +
+    '&dates=' + stamp(start) + '/' + stamp(eind) +
+    '&ctz=Europe/Amsterdam' +
+    '&location=' + encodeURIComponent(ADRES) +
+    '&details=' + encodeURIComponent(omschrijvingPlat);
+
+  const outlookWeb = 'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent' +
+    '&subject=' + encodeURIComponent(titel) +
+    '&startdt=' + iso(start) + '&enddt=' + iso(eind) +
+    '&location=' + encodeURIComponent(ADRES) +
+    '&body=' + encodeURIComponent(omschrijvingPlat);
+
+  el.innerHTML =
+    '<div class="box">' +
+      (patient ? '<div><span>Patiënt</span><b>'+esc(patient)+'</b></div>' : '') +
+      '<div><span>Datum</span><b>'+p2(d)+'-'+p2(m)+'-'+y+'</b></div>' +
+      '<div><span>Tijd</span><b>'+p2(hh)+':'+p2(mm)+' uur</b></div>' +
+      '<div><span>Locatie</span>'+esc(ADRES)+'</div>' +
+    '</div>' +
+    '<a class="btn main" href="'+icsUrl+'" download="afspraak-dadv.ics">Apple Agenda / Outlook</a>' +
+    '<a class="btn alt" href="'+google+'">Google Agenda</a>' +
+    '<a class="btn alt" href="'+outlookWeb+'">Outlook.com / Hotmail</a>' +
+    '<p class="hint">Kies de agenda die u gebruikt. Op een iPhone kiest u Apple Agenda.</p>';
+}
+</script>
+</body>
+</html>
